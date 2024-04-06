@@ -1,11 +1,28 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 
 function Question({ question, onAnswered }) {
   const [timeRemaining, setTimeRemaining] = useState(10);
+  const intervalRef = useRef(null);
 
-  // add useEffect code
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      setTimeRemaining((prevTime) => {
+        if (prevTime === 0) {
+          onAnswered(false);
+          return 0;
+        } else {
+          return prevTime - 1;
+        }
+      });
+    }, 1000);
+
+    return () => {
+      clearTimeout(intervalRef.current);
+    };
+  }, [onAnswered]);
 
   function handleAnswer(isCorrect) {
+    clearInterval(intervalRef.current);
     setTimeRemaining(10);
     onAnswered(isCorrect);
   }
@@ -19,7 +36,12 @@ function Question({ question, onAnswered }) {
       {answers.map((answer, index) => {
         const isCorrect = index === correctIndex;
         return (
-          <button key={answer} onClick={() => handleAnswer(isCorrect)}>
+          <button
+            key={answer}
+            onClick={() => {
+              handleAnswer(isCorrect);
+            }}
+          >
             {answer}
           </button>
         );
